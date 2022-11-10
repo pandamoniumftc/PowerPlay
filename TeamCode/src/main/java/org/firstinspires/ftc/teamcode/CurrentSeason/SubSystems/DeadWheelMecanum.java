@@ -32,6 +32,7 @@ public class DeadWheelMecanum extends AbstractSubsystem {
     public DeadWheelMecanum(AbstractRobot robot, String frmC, String flmC, String brmC, String blmC, String leftEC, String rightEC, String backEC, double resolution, double radius, double headingConstant) {
         super(robot);
 
+
         frm = robot.hardwareMap.dcMotor.get(frmC);
         flm = robot.hardwareMap.dcMotor.get(flmC);
         brm = robot.hardwareMap.dcMotor.get(brmC);

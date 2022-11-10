@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode.AbstractClasses;
 
+import com.qualcomm.hardware.bosch.BHI260IMU;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -18,6 +21,8 @@ public abstract class AbstractRobot {
     public ArrayList<AbstractSubsystem> subsystems;
 
     public Gamepad gamepad1, gamepad2;
+
+    public BHI260IMU imu;
 
     public AbstractRobot(OpMode opMode) {
         this.opMode =  opMode;
@@ -50,6 +55,13 @@ public abstract class AbstractRobot {
         this.gamepad1 = opMode.gamepad1;
         this.gamepad2 = opMode.gamepad2;
 
+        /*BHI260IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.loggingEnabled = true;
+        parameters.loggingTag     = "IMU";
+
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+*/
         for (AbstractSubsystem system : subsystems) {
             system.init();
         }
