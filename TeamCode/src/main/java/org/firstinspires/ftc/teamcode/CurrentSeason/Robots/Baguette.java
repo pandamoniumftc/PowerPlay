@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.CurrentSeason.OpModes.Robots;
+package org.firstinspires.ftc.teamcode.CurrentSeason.Robots;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -19,7 +19,7 @@ public class Baguette extends AbstractRobot {
         drive = new NoLocalizationMecanum(this, "frm", "brm", "flm", "blm");
 
         //AbstractRobot robot, String leftVertEC, String rightVertEC, String extEC, String clampConfig, int max, int min, double resolution, double gearRatio
-        intake = new LinearSlides(this, "lvm", "rvm", 0, 50, 751.8, 1);
+        intake = new LinearSlides(this, "lvm", "rvm", "mvm", "clamp", 0, 50, 751.8, 1);
 
     }
 }

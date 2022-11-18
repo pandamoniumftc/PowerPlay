@@ -22,7 +22,7 @@ public abstract class AbstractRobot {
 
     public Gamepad gamepad1, gamepad2;
 
-    public BHI260IMU imu;
+    //public BHI260IMU imu;
 
     public AbstractRobot(OpMode opMode) {
         this.opMode =  opMode;
