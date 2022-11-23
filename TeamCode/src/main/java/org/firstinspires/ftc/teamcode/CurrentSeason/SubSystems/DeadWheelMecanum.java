@@ -23,18 +23,18 @@ public class DeadWheelMecanum extends AbstractSubsystem {
 
     public DcMotorEx backPerpendicularE;
 
-    public double encoderResolution = 4096;
+    public double trackWidth;
+    public double forwardOffset;
+    public double inchPerTick;
 
-    public double wheelRadius;
-    private double wheelCircumference;
+    public Transform2D t0;
+    public Transform2D t;
 
-    public double Kh = 0;
+    private double prevL;
+    private double prevR;
+    private double prevH;
 
-
-
-    public Transform2D transform;
-
-    public DeadWheelMecanum(AbstractRobot robot, String frmC, String flmC, String brmC, String blmC, String leftEC, String rightEC, String backEC, double resolution, double radius, double headingConstant) {
+    public DeadWheelMecanum(AbstractRobot robot, String frmC, String flmC, String brmC, String blmC, String leftEC, String rightEC, String backEC, double trackWidth, double forwardOffset, double inchPerTick, Transform2D initialPos) {
         super(robot);
 
         frm = robot.hardwareMap.dcMotor.get(frmC);
@@ -50,17 +50,20 @@ public class DeadWheelMecanum extends AbstractSubsystem {
         rightForwardE.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backPerpendicularE.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        leftForwardE.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightForwardE.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backPerpendicularE.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftForwardE.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightForwardE.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backPerpendicularE.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        encoderResolution = resolution;
-        wheelRadius = radius;
-        wheelCircumference = PI * 2 * radius;
-        Kh = headingConstant;
+        this.trackWidth = trackWidth;
+        this.forwardOffset = forwardOffset;
+        this.inchPerTick = inchPerTick;
 
-        transform = new Transform2D();
+        this.t0 = initialPos;
+        this.t = new Transform2D(initialPos.x, initialPos.y, initialPos.heading);
 
+        prevL = leftForwardE.getCurrentPosition();
+        prevR = rightForwardE.getCurrentPosition();
+        prevH = backPerpendicularE.getCurrentPosition();
     }
 
     @Override
@@ -75,21 +78,43 @@ public class DeadWheelMecanum extends AbstractSubsystem {
 
     @Override
     public void driverLoop() {
-        double x = robot.gamepad1.left_stick_x;
+        double x = -robot.gamepad1.left_stick_x;
         double y = robot.gamepad1.left_stick_y;
 
-        double c = robot.gamepad1.right_stick_x;
+        double c = -robot.gamepad1.right_stick_x;
 
         double speedMultiply =  (1-robot.gamepad1.right_trigger) * 0.75 + 0.25;
 
-        double max = max(max(abs(y+x+c), abs(y-x+c)), max(abs(-y+x+c), abs(-y-x+c)));
-        double coefficient = speedMultiply/max;
+        /*double angle = Math.atan2(y, x);
+        double magnitude = Math.sqrt(y*y + x*x);
+
+        if (Math.abs(angle) < 5) {
+            y = 0;
+            x = magnitude;
+        }
+
+        if (Math.abs(angle - PI / 2) < 5) {
+            y = magnitude;
+            x = 0;
+        }
+
+        if (Math.abs(angle - PI) < 5) {
+            y = 0;
+            x = -magnitude;
+        }
+
+        if (Math.abs(angle - 3 * PI / 2) < 5) {
+            y = -magnitude;
+            x = 0;
+        }*/
+
+        setMotorPower(x, y, c, speedMultiply);
 
         updateTransform();
 
-        robot.telemetry.addData("x: ", transform.x);
-        robot.telemetry.addData("y: ", transform.y);
-        robot.telemetry.addData("heading: ", transform.heading);
+        robot.telemetry.addData("x: ", t.x);
+        robot.telemetry.addData("y: ", t.y);
+        robot.telemetry.addData("heading: ", t.heading);
         robot.telemetry.update();
     }
 
@@ -113,7 +138,7 @@ public class DeadWheelMecanum extends AbstractSubsystem {
         blm.setPower( (-y-x+c) * coefficient);
     }
 
-    public void setMotorPower(double r, double theta) {
+    /*public void setMotorPower(double r, double theta) {
         double x = r * cos(theta);
         double y = r * sin(theta);
 
@@ -142,8 +167,8 @@ public class DeadWheelMecanum extends AbstractSubsystem {
         double headingError = headingTarget;
         double translationalError = translationalTarget;
 
-        PIDController headingController = new PIDController(1, 0, 0.3, 0.05);
-        PIDController translationalController = new PIDController(1, 0, 0.3, 0.2);
+        PIDController headingController = new PIDController(1, 0, 0, 0.05);
+        PIDController translationalController = new PIDController(1, 0, 0, 0.2);
 
         while (headingError > headingController.margin && translationalError > translationalController.margin) {
             updateTransform();
@@ -157,16 +182,57 @@ public class DeadWheelMecanum extends AbstractSubsystem {
             setMotorPower(0, y, c, 0.5);
         }
         setMotorPower(0, 0, 0, 0);
-    }
+    }*/
 
     public Transform2D updateTransform() {
-        double x = 0.5 * (leftForwardE.getCurrentPosition() + rightForwardE.getCurrentPosition()) * (1.0/encoderResolution) * wheelCircumference;
-        double y = backPerpendicularE.getCurrentPosition() * (1.0/encoderResolution) * wheelCircumference;
+        /*
+        delta_left_encoder_pos = left_encoder_pos - prev_left_encoder_pos
+        delta_right_encoder_pos = right_encoder_pos - prev_right_encoder_pos
+        delta_center_encoder_pos = center_encoder_pos - prev_center_encoder_pos
 
-        double heading = (leftForwardE.getCurrentPosition() - rightForwardE.getCurrentPosition()) * (1.0/encoderResolution) * wheelCircumference * Kh;
+        phi = (delta_left_encoder_pos - delta_right_encoder_pos) / trackwidth
+        delta_middle_pos = (delta_left_encoder_pos + delta_right_encoder_pos) / 2
+        delta_perp_pos = delta_center_encoder_pos - forward_offset * phi
 
-        transform = new Transform2D(x, y, heading);
+        delta_x = delta_middle_pos * cos(heading) - delta_perp_pos * sin(heading)
+        delta_y = delta_middle_pos * sin(heading) + delta_perp_pos * cos(heading)
 
-        return transform;
+        x_pos += delta_x
+        y_pos += delta_y
+        heading += phi
+
+        prev_left_encoder_pos = left_encoder_pos
+        prev_right_encoder_pos = right_encoder_pos
+        prev_center_encoder_pos = center_encoder_pos
+        */
+
+        double dxl = (-leftForwardE.getCurrentPosition() - prevL ) * inchPerTick;
+        double dxr = (rightForwardE.getCurrentPosition() - prevR) * inchPerTick;
+        double dc = (backPerpendicularE.getCurrentPosition() - prevH) * inchPerTick;
+
+        double phi = (dxl - dxr) / trackWidth;
+        double dm = (dxl + dxr) / 2;
+        double dh = dc - (forwardOffset * phi);
+
+        double dx = dm * cos(t.heading) - dh * sin(t.heading);
+        double dy = dm * sin(t.heading) + dh * cos(t.heading);
+
+        t.x += dx;
+        t.y += dy;
+        t.heading += phi;
+
+        prevL = -leftForwardE.getCurrentPosition();
+        prevR = rightForwardE.getCurrentPosition();
+        prevH = backPerpendicularE.getCurrentPosition();
+
+        telemetry.addData("xl: ", -leftForwardE.getCurrentPosition());
+        telemetry.addData("xr: ", rightForwardE.getCurrentPosition());
+        telemetry.addData("c: ", backPerpendicularE.getCurrentPosition());
+        telemetry.addData("dxl: ", dxl);
+        telemetry.addData("dxr: ", dxr);
+        telemetry.addData("dc: ", dc);
+        telemetry.addData("phi: ", phi);
+
+        return t;
     }
 }

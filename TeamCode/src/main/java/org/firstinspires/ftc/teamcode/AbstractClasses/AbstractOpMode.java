@@ -7,6 +7,8 @@ public abstract class AbstractOpMode extends LinearOpMode {
 
     public abstract AbstractRobot instantiateRobot();
 
+    public boolean hasConfig = false;
+
     public AbstractRobot getRobot() {
         return robot;
     }
@@ -15,10 +17,13 @@ public abstract class AbstractOpMode extends LinearOpMode {
     }
 
     public void onStop() {
+        super.stop();
     }
 
     @Override
     public void runOpMode() {
         robot = instantiateRobot();
     }
+
+
 }

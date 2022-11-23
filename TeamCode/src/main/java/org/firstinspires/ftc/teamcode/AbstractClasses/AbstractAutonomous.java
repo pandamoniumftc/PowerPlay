@@ -18,11 +18,12 @@ public abstract class AbstractAutonomous extends AbstractOpMode{
 
             while(!isStarted() && !isStopRequested()) {}
 
-            robot.start();
+
             autonomous();
 
-            onStop();
             robot.stop();
+            onStop();
+
 
         }
         catch (IllegalAccessException e) {

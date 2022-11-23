@@ -19,7 +19,7 @@ public class Baguette extends AbstractRobot {
         drive = new NoLocalizationMecanum(this, "frm", "brm", "flm", "blm");
 
         //AbstractRobot robot, String leftVertEC, String rightVertEC, String extEC, String clampConfig, int max, int min, double resolution, double gearRatio
-        intake = new LinearSlides(this, "lvm", "rvm", "mvm", "clamp", 0, 50, 751.8, 1);
+        intake = new LinearSlides(this, "lvm", "mhm", "clamp", 50, 0, 751.8, 1);
 
     }
 }

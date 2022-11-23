@@ -19,7 +19,7 @@ public class ScanPipeline extends OpenCvPipeline {
         YELLOW
     }
 
-    public static State detectedState = State.GREEN;
+    public static State detectedState = State.YELLOW;
 
     /*
      * NOTE: if you wish to use additional Mat objects in your processing pipeline, it is
@@ -39,27 +39,31 @@ public class ScanPipeline extends OpenCvPipeline {
         Mat gBinary = new Mat();
         Mat yBinary = new Mat();
 
+        Imgproc.resize(img, img, new Size(60, (int) Math.round((60/img.size().width)*img.size().height)));
+
         /*Core.inRange(img, new Scalar(120, 20, 40), new Scalar(170, 120, 110), pBinary);
         Core.inRange(img, new Scalar(60, 15, 35), new Scalar(100, 255, 185), gBinary);
         Core.inRange(img, new Scalar(20, 10, 60), new Scalar(40, 175, 180), yBinary);*/
 
         Core.inRange(img, new Scalar(130, 20, 30), new Scalar(170, 100, 120), pBinary);
-        Core.inRange(img, new Scalar(50, 20, 30), new Scalar(90, 115, 185), gBinary);
-        Core.inRange(img, new Scalar(14, 40, 70), new Scalar(40, 160, 190), yBinary);
+        Core.inRange(img, new Scalar(50, 70, 20), new Scalar(80, 160, 120), gBinary);
+        Core.inRange(img, new Scalar(20, 50, 50), new Scalar(40, 220, 220), yBinary);
 
         /*Core.inRange(img, new Scalar(130, 0, 70), new Scalar(190, 30, 130), pBinary);
         Core.inRange(img, new Scalar(40, 70, 20), new Scalar(40, 130, 80), gBinary);
         Core.inRange(img, new Scalar(0, 220, 220), new Scalar(30, 255, 255), yBinary);*/
 
-        Imgproc.resize(pBinary, pBinary, new Size(20, (int) Math.round((20/pBinary.size().width)*pBinary.size().height)));
-        Imgproc.resize(gBinary, gBinary, new Size(20, (int) Math.round((20/gBinary.size().width)*gBinary.size().height)));
-        Imgproc.resize(yBinary, yBinary, new Size(20, (int) Math.round((20/yBinary.size().width)*yBinary.size().height)));
+        //Imgproc.resize(pBinary, pBinary, new Size(20, (int) Math.round((20/pBinary.size().width)*pBinary.size().height)));
+        //Imgproc.resize(gBinary, gBinary, new Size(20, (int) Math.round((20/gBinary.size().width)*gBinary.size().height)));
+        //Imgproc.resize(yBinary, yBinary, new Size(20, (int) Math.round((20/yBinary.size().width)*yBinary.size().height)));
 
 
         Mat erode = Mat.ones(3,3, CvType.CV_32F);
 
         Imgproc.morphologyEx(pBinary, pBinary, Imgproc.MORPH_CLOSE, erode);
         Imgproc.morphologyEx(gBinary, gBinary, Imgproc.MORPH_CLOSE, erode);
+
+        Imgproc.morphologyEx(gBinary, gBinary, Imgproc.MORPH_ERODE, erode);
         Imgproc.morphologyEx(yBinary, yBinary, Imgproc.MORPH_CLOSE, erode);
 
         double p = 0;
@@ -87,7 +91,7 @@ public class ScanPipeline extends OpenCvPipeline {
 
         Imgproc.cvtColor(intermediateMask, intermediateMask, Imgproc.COLOR_GRAY2BGR);
 
-        //Imgproc.resize(img, img, new Size(20, (int) Math.round((20/intermediateMask.size().width)*intermediateMask.size().height)));
+        Imgproc.resize(intermediateMask, intermediateMask, new Size(60, (int) Math.round((60/intermediateMask.size().width)*intermediateMask.size().height)));
         Core.bitwise_and(intermediateMask, img, img);
 
 
