@@ -88,7 +88,7 @@ public class DeadWheelMecanum extends AbstractSubsystem {
 
         double c = -robot.gamepad1.left_stick_x;
 
-        double speedMultiply = 0.4 + 0.6 * robot.gamepad1.right_trigger;
+        double speedMultiply = 0.4 + (0.6 * robot.gamepad1.right_trigger);
 
         /*double angle = Math.atan2(y, x);
         double magnitude = Math.sqrt(y*y + x*x);
