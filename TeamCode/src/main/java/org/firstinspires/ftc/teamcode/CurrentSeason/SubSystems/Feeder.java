@@ -11,23 +11,27 @@ import org.firstinspires.ftc.teamcode.CurrentSeason.Util.Toggle;
 
 public class Feeder extends AbstractSubsystem {
     public DcMotor extend;
-    public Servo claw, lFlip, rFlip;
+    public Servo claw, lFlip1, rFlip1, lFlip2, rFlip2;
 
-    public Toggle flipToggle;
+    public Toggle flip1Toggle;
+    public Toggle flip2Toggle;
     public Toggle clawToggle;
     public Toggle extendToggle;
 
 
-    public Feeder(AbstractRobot robot, String extendC, String clawC, String lFlipC, String rFlipC) {
+    public Feeder(AbstractRobot robot, String extendC, String clawC, String lFlip1C, String rFlip1C, String lFlip2C, String rFlip2C) {
         super(robot);
 
         extend = robot.hardwareMap.dcMotor.get(extendC);
 
         claw = robot.hardwareMap.servo.get(clawC);
-        lFlip = robot.hardwareMap.servo.get(lFlipC);
-        rFlip = robot.hardwareMap.servo.get(rFlipC);
+        lFlip1 = robot.hardwareMap.servo.get(lFlip1C);
+        rFlip1 = robot.hardwareMap.servo.get(rFlip1C);
+        lFlip2 = robot.hardwareMap.servo.get(lFlip2C);
+        rFlip2 = robot.hardwareMap.servo.get(rFlip2C);
 
-        flipToggle = new Toggle(false);
+        flip1Toggle = new Toggle(false);
+        flip2Toggle = new Toggle(false);
         clawToggle = new Toggle(false);
         extendToggle = new Toggle(false);
 
@@ -35,9 +39,11 @@ public class Feeder extends AbstractSubsystem {
 
     @Override
     public void init() {
-        claw.setPosition(0);
-        lFlip.setPosition(0);
-        rFlip.setPosition(0);
+        /*claw.setPosition(0);
+        lFlip1.setPosition(0);
+        rFlip1.setPosition(0);
+        lFlip2.setPosition(0);
+        rFlip2.setPosition(0);*/
     }
 
     @Override
@@ -47,14 +53,18 @@ public class Feeder extends AbstractSubsystem {
 
     @Override
     public void driverLoop() {
-        flipToggle.updateState(robot.gamepad2.x);
+        flip1Toggle.updateState(robot.gamepad2.x);
+        flip2Toggle.updateState(robot.gamepad2.y);
+
         clawToggle.updateState(robot.gamepad2.a);
 
         claw.setPosition( (clawToggle.state) ? 1 : 0 );
-        lFlip.setPosition( (flipToggle.state) ? 1 : 0 );
-        rFlip.setPosition( (flipToggle.state) ? 1 : 0 );
+        lFlip1.setPosition( (flip1Toggle.state) ? 1 : 0 );
+        rFlip1.setPosition( (flip1Toggle.state) ? 1 : 0 );
+        lFlip2.setPosition( (flip2Toggle.state) ? 1 : 0 );
+        rFlip2.setPosition( (flip2Toggle.state) ? 1 : 0 );
 
-        if (robot.gamepad2.y) {
+        if (robot.gamepad2.b) {
             boolean prevState = extendToggle.state;
             extendToggle.updateState(true);
 
