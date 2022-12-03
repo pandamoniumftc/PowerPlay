@@ -2,10 +2,13 @@ package org.firstinspires.ftc.teamcode.CurrentSeason.SubSystems;
 
 import static java.lang.Math.*;
 
+import com.qualcomm.hardware.bosch.BHI260IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.OrientationSensor;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.AbstractClasses.AbstractRobot;
 import org.firstinspires.ftc.teamcode.AbstractClasses.AbstractSubsystem;
 import org.firstinspires.ftc.teamcode.CurrentSeason.Util.PIDController;
@@ -20,6 +23,8 @@ public class DeadWheelMecanum extends AbstractSubsystem {
 
     public DcMotorEx leftForwardE;
     public DcMotorEx rightForwardE;
+    
+    public BHI260IMU imu;
 
     public DcMotorEx backPerpendicularE;
 
@@ -78,12 +83,12 @@ public class DeadWheelMecanum extends AbstractSubsystem {
 
     @Override
     public void driverLoop() {
-        double x = -robot.gamepad1.left_stick_x;
+        double x = robot.gamepad1.right_stick_x;
         double y = robot.gamepad1.left_stick_y;
 
-        double c = -robot.gamepad1.right_stick_x;
+        double c = -robot.gamepad1.left_stick_x;
 
-        double speedMultiply =  (1-robot.gamepad1.right_trigger) * 0.75 + 0.25;
+        double speedMultiply = 0.4 + 0.6 * robot.gamepad1.right_trigger;
 
         /*double angle = Math.atan2(y, x);
         double magnitude = Math.sqrt(y*y + x*x);
@@ -112,6 +117,10 @@ public class DeadWheelMecanum extends AbstractSubsystem {
 
         updateTransform();
 
+        robot.telemetry.addData("speedMultiply: ", speedMultiply);
+        robot.telemetry.addData("raw x: ", x);
+        robot.telemetry.addData("raw y: ", y);
+        robot.telemetry.addData("raw c", c);
         robot.telemetry.addData("x: ", t.x);
         robot.telemetry.addData("y: ", t.y);
         robot.telemetry.addData("heading: ", t.heading);
@@ -136,6 +145,9 @@ public class DeadWheelMecanum extends AbstractSubsystem {
         brm.setPower( ( y-x+c) * coefficient);
         flm.setPower( (-y+x+c) * coefficient);
         blm.setPower( (-y-x+c) * coefficient);
+
+        robot.telemetry.addData("coefficient: ", coefficient);
+
     }
 
     /*public void setMotorPower(double r, double theta) {
@@ -208,7 +220,7 @@ public class DeadWheelMecanum extends AbstractSubsystem {
 
         double dxl = (-leftForwardE.getCurrentPosition() - prevL ) * inchPerTick;
         double dxr = (rightForwardE.getCurrentPosition() - prevR) * inchPerTick;
-        double dc = (backPerpendicularE.getCurrentPosition() - prevH) * inchPerTick;
+        double dc = (-backPerpendicularE.getCurrentPosition() - prevH) * inchPerTick;
 
         double phi = (dxl - dxr) / trackWidth;
         double dm = (dxl + dxr) / 2;
@@ -223,7 +235,7 @@ public class DeadWheelMecanum extends AbstractSubsystem {
 
         prevL = -leftForwardE.getCurrentPosition();
         prevR = rightForwardE.getCurrentPosition();
-        prevH = backPerpendicularE.getCurrentPosition();
+        prevH = -backPerpendicularE.getCurrentPosition();
 
         telemetry.addData("xl: ", -leftForwardE.getCurrentPosition());
         telemetry.addData("xr: ", rightForwardE.getCurrentPosition());
